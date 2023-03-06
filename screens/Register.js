@@ -19,10 +19,6 @@ export default function RegisterScreen({ navigation }) {
     const [password, setPassword] = useState({ value: ''})
     const [isDisabled, setDisabled] = useState(false)
 
-    const MAX_LEN = 15,
-    MIN_LEN = 6,
-    PASS_LABELS = ["Too Short", "Weak", "Normal", "Strong", "Secure"];
-
     const styles = {
         inputView: {
             backgroundColor: "#FFC0CB",
@@ -78,7 +74,7 @@ export default function RegisterScreen({ navigation }) {
 
     const onSignUpPressed = () => {
         const emailError = emailValidator(email.value)
-        const passwordError = passwordValidator(password.value)
+        const passwordError = validatePassword(password.value)
         if (emailError || passwordError) {
           setEmail({ ...email, error: emailError })
           setPassword({ ...password, error: passwordError })
@@ -86,35 +82,47 @@ export default function RegisterScreen({ navigation }) {
         }
         setDisabled(true);
 
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                first_name: firstName.value,
-                last_name: surname.value,
-                email: email.value,
-                password: password.value})
-          };
-          console.log(requestOptions);
+        
           const postUser = async () => {
+
+            const requestOptions = {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                  first_name: firstName.value,
+                  last_name: surname.value,
+                  email: email.value,
+                  password: password.value})
+            };
+            
+            console.log(requestOptions);
+
             await fetch(
                 'http://localhost:3333/api/1.0.0/user', requestOptions)
                 .then(async (response) => {
-                    if (!response.ok) {
-                      const text = await response.text()
-                      setSigningUp(true)
-                      throw new Error(text)
+                    if (response.status === 201){
+                      return response.json();
+                    } else if (response.status === 400){
+                      throw "Email address is already in use"
+                    } else {
+                      throw "Something went wrong"
                     }
-                    const text = await response.text()
-                    setSigningUp(false)
-                    return JSON.parse(text)
-                  })
-                  .catch((error) => console.log(error))
-                  .then((response) => console.log(response))
-          }
-          postUser();
-          setDisabled(false)
+          })
+          .then((responseJson) => {
+            console.log(responseJson);
+            setEmail({...email, error: "User added successfully"});
+            setDisabled(false);
+            onBackPressed();
+          })
+          .catch((e) => {
+            console.log(error)
+            setEmail({...email, error: e})
+            setDisabled(false)
+          })
         }
+        postUser();
+      }
+
         const onBackPressed = () => {
             navigation.reset({
             index: 0,
@@ -161,6 +169,7 @@ export default function RegisterScreen({ navigation }) {
             textContentType="emailAddress"
             keyboardType="email-address"
         />
+        {email.error ? <Text style={{ color: 'red', paddingBottom: 6 }}>{email.error}</Text> : null}
         <TextInput
             label="Password"
             placeholder='Password'
@@ -172,15 +181,7 @@ export default function RegisterScreen({ navigation }) {
             errorText={password.error}
             secureTextEntry
         />
-        <SafeAreaView style={styles.container}>
-            <PassMeter
-                showLabels
-                password={password.value}
-                maxLength={MAX_LEN}
-                minLength={MIN_LEN}
-                labels={PASS_LABELS}
-        />
-        </SafeAreaView>
+        {password.error ? <Text style={{ color: 'red' }}>{password.error}</Text> : null}
         <Button
             mode="contained"
             disabled={isDisabled}
@@ -203,19 +204,20 @@ function emailValidator(email) {
     if (!validate(email)) return 'Ooops! We need a valid email address.'
     return ''
   }
-  
-  function validatePassword(password) {
-    if (!/^.{8,16}$/.test(password)) {
-      return 'Password must be between 8 and 16 characters long';
-    }
-    if (!/[!@#$%^&*()-_+=\[\]{}|\\:;"'<>,.?/]/.test(password)) {
-      return 'Password must contain at least one special character';
-    }
-    if (!/\d/.test(password)) {
-      return 'Password must contain at least one digit';
-    }
-    if (!/[A-Z]/.test(password)) {
-      return 'password must contain at least one uppercase letter';
-    }
-    return ''
+
+function validatePassword(password) {
+  if (!/^.{8,16}$/.test(password)) {
+    return 'Password must be between 8 and 16 characters long';
   }
+  if (!/[!@#$%^&*()-_+=\[\]{}|\\:;"'<>,.?/]/.test(password)) {
+    return 'Password must contain at least one special character';
+  }
+  if (!/\d/.test(password)) {
+    return 'Password must contain at least one digit';
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'password must contain at least one uppercase letter';
+  }
+  return ''
+}
+
