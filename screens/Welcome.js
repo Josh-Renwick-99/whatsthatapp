@@ -88,6 +88,7 @@ export default function WelcomeScreen({ navigation }){
                 await AsyncStorage.setItem("WhatsThat_usr_id", responseJson.id)
                 await AsyncStorage.setItem("WhatsThat_usr_token", responseJson.token)
                 setDisabled(false)
+                navigation.replace("mainScreen")
               } catch {
                 throw "Something went wrong"
               }
