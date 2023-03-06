@@ -6,6 +6,7 @@ import Header from '../components/Header'
 import { theme } from '../core/theme';
 import Logo from '../components/Logo';
 import Button from '../components/Button';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const styles = {
   inputView: {
@@ -60,8 +61,10 @@ const styles = {
 export default function WelcomeScreen({ navigation }){
   const [email, setEmail] = useState({ value: '', error: '' })
   const [password, setPassword] = useState({ value: '', error: '' })
+  const [isDisabled, setDisabled] = useState(false)
 
   const onLoginPressed = () => {
+    setDisabled(true);
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,15 +74,24 @@ export default function WelcomeScreen({ navigation }){
         await fetch(
             'http://localhost:3333/api/1.0.0/login', requestOptions)
             .then(async (response) => {
-              if (!response.ok) {
-                const text = await response.text()
-                throw new Error(text)
+              if (response.status === 200) {
+                return response.json()
+              } else if (response.status === 400){
+                throw "Invalid login credentials"
+              } else {
+                throw "Something went wrong"
               }
-              const text = await response.text()
-              return JSON.parse(text)
             })
-            .catch((error) => console.log(error))
-            .then((response) => console.log(response))
+            .then(async (responseJson) => {
+              console.log(responseJson)
+              try {
+                await AsyncStorage.setItem("WhatsThat_usr_id", responseJson.id)
+                await AsyncStorage.setItem("WhatsThat_usr_token", responseJson.token)
+                setDisabled(false)
+              } catch {
+                throw "Something went wrong"
+              }
+            })
     }
     postLogin();
   }
@@ -118,7 +130,7 @@ export default function WelcomeScreen({ navigation }){
           <Text style={styles.forgot_button}>Forgot your password?</Text>
         </TouchableOpacity>
       </View>
-      <Button mode="contained" onPress={onLoginPressed}>
+      <Button mode="contained" onPress={onLoginPressed} disabled={isDisabled}>
         Login
       </Button>
       <View style={styles.SignUp}>
