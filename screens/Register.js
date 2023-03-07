@@ -116,7 +116,7 @@ export default function RegisterScreen({ navigation }) {
           })
           .catch((e) => {
             console.log(error)
-            setEmail({...email, error: e})
+            this.setEmail({...email, error: e})
             setDisabled(false)
           })
         }

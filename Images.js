@@ -1,0 +1,1 @@
+export const defaultPp = require('./assets/defaultpp.png');
