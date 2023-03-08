@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LogoutButton() {
   return (
-    <TouchableOpacity onPress={logout} style={styles.container}>
+    <TouchableOpacity onPress={logout}>
       <Image
         style={styles.image}
         source={require('../assets/logout.png')}
@@ -37,11 +37,6 @@ const logout = async () => {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    top: 15 + getStatusBarHeight(),
-    left: 4,
-  },
   image: {
     width: 64,
     height: 64,

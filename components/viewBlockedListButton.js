@@ -4,7 +4,7 @@ import { getStatusBarHeight } from 'react-native-status-bar-height'
 import Modal from "react-native-modal";
 import ContactList from "./ContactList";
 
-export default function AddContactButton() {
+export default function ViewBlockedList() {
   const [isContactScreenVisible, setContactScreenVisible] = useState(false);
 
   const toggleAddContact = async () => {
@@ -14,13 +14,13 @@ export default function AddContactButton() {
   return (
     <View>
       <TouchableOpacity onPress={toggleAddContact}>
-        <Image source={require('../assets/addContact.png')} style={styles.modalImage} />
+        <Image source={require('../assets/blockedList.png')} style={styles.modalImage} />
       </TouchableOpacity>
       <Modal isVisible={isContactScreenVisible} animationType="slide">
         <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Add Contact</Text>
+          <Text style={styles.modalTitle}>Block List</Text>
           <ContactList
-           url="http://localhost:3333/api/1.0.0/search?search_in=all&offset=0"
+           url="http://localhost:3333/api/1.0.0/blocked"
            />
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={toggleAddContact}>
@@ -50,11 +50,7 @@ const styles = StyleSheet.create({
     height: 64,
   },
   modalImageContainer:{
-    position: 'absolute',
-    top: 10 + getStatusBarHeight(),
-    left: 115,
-    marginTop: 5, 
-    marginRight: 5,
+    flex: 1, justifyContent: 'center', alignItems: 'center', alignSelf: 'center' 
   },
   modalTitle: {
     color: 'black',
